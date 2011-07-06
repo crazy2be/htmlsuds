@@ -15,4 +15,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println(root)
+	log.Println("-------Generating HTML Output-------")
+	err = GenerateHTML(root, os.Stdout)
+	if err != nil {
+		log.Println(err)
+	}
 }

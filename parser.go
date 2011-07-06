@@ -14,15 +14,15 @@ type parseState struct {
 	inTagBody bool
 	tagClosed bool
 	lineNo int
-	currentNode *SudNode
-	rootNode *SudNode
+	currentNode *Node
+	rootNode *Node
 	rd io.Reader
 	wr io.Writer
 }
 
 func newParseState(rd io.Reader, wr io.Writer) *parseState {
 	ps := new(parseState)
-	ps.rootNode = NewSudNode(nil)
+	ps.rootNode = NewNode(nil)
 	ps.currentNode = ps.rootNode
 	ps.rootNode.Name = "root"
 	log.Println(ps)
@@ -82,9 +82,6 @@ func (p *parseState) parseLine(l []uint8) {
 				break loop
 		}
 	}
-	//if !p.inTag {
-		//p.wr.Write(l)
-	//}
 }
 
 func (p *parseState) parseName(l []uint8) (name string, offset int) {
@@ -134,7 +131,7 @@ func (p *parseState) parseAttribute(l []uint8) (i int) {
 	defer func() {
 		if key != "" {
 			fmt.Println("Found attribute:", key, "=", val)
-			p.currentNode.Arguments[key] = val
+			p.currentNode.Args[key] = val
 		}
 	}()
 	for i = 0; i < len(l); i++ {
@@ -180,7 +177,7 @@ func (p *parseState) parseAttribute(l []uint8) (i int) {
 	return
 }
 
-func ParseReader(rd io.Reader) (root *SudNode, err os.Error) {
+func ParseReader(rd io.Reader) (root *Node, err os.Error) {
 	bufr := bufio.NewReader(rd)
 	ps := newParseState(bufr, os.Stdout)
 	ps.rd = bufr
@@ -188,19 +185,25 @@ func ParseReader(rd io.Reader) (root *SudNode, err os.Error) {
 	for {
 		l, isPrefix, err := bufr.ReadLine()
 		if err != nil {
-			return
+			if err == os.EOF {
+				return ps.rootNode, nil
+			}
+			return nil, err
 		}
 		for isPrefix == true {
 			var l2 []uint8
 			l2, isPrefix, err = bufr.ReadLine()
 			if err != nil {
-				return
+				if err == os.EOF {
+					return ps.rootNode, nil
+				}
+				return nil, err
 			}
 			l = append(l, l2...)
 		}
 		ps.parseLine(l)
 		fmt.Println(string(l))
 	}
-	fmt.Println(ps.rootNode)
-	return
+	fmt.Println("Done parsing! Root node:", ps.rootNode)
+	return ps.rootNode, nil
 }
