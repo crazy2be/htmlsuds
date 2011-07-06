@@ -1,0 +1,21 @@
+@html
+@head
+	@script src="/js/foo.js" !
+	@style src="/css/foo.css" !
+	@title
+		Super coolness
+	@!title
+@!head (This text is ignored)
+@body
+	@p
+		Hello world. This is cool? Ok, that's good.
+	@!p
+	@markdown
+This is some markdown text. The indentation will be passed verbatim to the markdown processor, so you can have code and stuff too:
+
+	SomeCode()
+
+ - A list
+	@!markdown
+@!body
+@!html

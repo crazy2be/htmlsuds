@@ -1,0 +1,27 @@
+<@html>
+<<head>>
+<<style src="/css/foo.css">><</style>>
+<<script src="/js/foo.js">><</script>>
+<</head>>
+<<body>>
+<<markdown>>
+This is an example paragraph written in *markdown*. Cool, eh? Useful when you are writing help pages and the like, and don't want to bother with **html**.
+
+	// Some example code
+	// Connect to the server
+	conn, err := server.Connect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	// Send some data
+	fmt.Fprintln(conn, "Hello server!")
+
+This code does a bunch of things:
+
+ - Looks awesome in a demo
+ - Connects to the coolest server ever
+ - Does it really need to do anything else?
+<</markdown>>
+<</body>>
+<</html>>
