@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"exec"
 	"log"
 	"os"
@@ -8,26 +9,43 @@ import (
 )
 
 func GenerateHTML(root *Node, wr io.Writer) (os.Error) {
+	val, err := generateHTML(root, wr)
+	wr.Write(val)
+	return err
+}
+
+func generateHTML(root *Node, wr io.Writer) (val []byte, err os.Error) {
 	if root == nil {
-		return os.NewError("Nil node passed, cannot possibly generate HTML.")
+		err = os.NewError("Nil node passed, cannot possibly generate HTML.")
+		return
 	}
 	cmdname := root.Name
-	cmdline := make([]string, len(root.Args))
-	i := 0
-	for key, val := range root.Args {
-		cmdline[i] = "-"+key+"=\""+val+"\""
-		i++
-	}
+	cmdline := root.Args()
 	cmd := exec.Command("suds/"+cmdname, cmdline...)
 	output, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return
 	}
-	input, err := cmd.StdinPipe()
+	inputp, err := cmd.StdinPipe()
 	if err != nil {
-		return err
+		return
 	}
+	input := bytes.NewBuffer([]byte(""))
+	input.Write(root.Content)
+	go input.WriteTo(inputp)
+	buf := bytes.NewBuffer([]byte(""))
+	buf.ReadFrom(output)
+	raw := buf.Bytes()
+	subroot, err := Parse(buf)
+	if err != nil {
+		return
+	}
+	if len(subroot.Children) == 0 {
+		wr.Write(raw)
+		return
+	}
+	GenerateHTML(subroot, wr)
 	cmd.Run()
 	log.Println(cmd)
-	return nil
+	return
 }

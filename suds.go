@@ -10,7 +10,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	root, err := ParseReader(f)
+	root, err := Parse(f)
 	if err != nil {
 		log.Fatalln(err)
 	}

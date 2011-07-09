@@ -14,6 +14,7 @@ type parseState struct {
 	inTagBody bool
 	tagClosed bool
 	lineNo int
+	parseSubNodes bool
 	currentNode *Node
 	rootNode *Node
 	rd io.Reader
@@ -53,17 +54,17 @@ func (p *parseState) parseLine(l []uint8) {
 				if l[i+1] == '!' {
 					name, _ := p.parseName(l[i+2:])
 					log.Println("Closing node with name", name)
-					if name != p.currentNode.Name {
+					if name != p.currentNode.TagParent().Name {
+						//p.currentNode.Content = append(p.currentNode.Content, l...)
 						log.Fatalf("%d: Closing tag does not match currently open tag! Document is not well-formed! (got %s, expected %s)\n", p.lineNo, name, p.currentNode.Name)
 					}
-					p.currentNode = p.currentNode.Parent
+					p.currentNode = p.currentNode.TagParent().Parent
 					return
 				}
 				// Add this new node we are processing as a child
 				log.Println(p.currentNode)
 				log.Println(p.rootNode)
-				newNode := NewSudNode(p.currentNode)
-				p.currentNode.Children = append(p.currentNode.Children, newNode)
+				newNode := p.currentNode.NewChild()
 				p.currentNode = newNode
 				
 				p.inTag = true
@@ -77,8 +78,12 @@ func (p *parseState) parseLine(l []uint8) {
 				}
 				break loop
 			default:
-				p.currentNode.Content = append(p.currentNode.Content, l...)
-				p.currentNode.Content = append(p.currentNode.Content, '\n')
+				// The current node is not a text node, make a new text node.
+				if !p.currentNode.IsText() {
+					newNode := p.currentNode.NewChild()
+					p.currentNode = newNode
+				}
+				fmt.Fprintln(p.currentNode, string(l))
 				break loop
 		}
 	}
@@ -131,7 +136,7 @@ func (p *parseState) parseAttribute(l []uint8) (i int) {
 	defer func() {
 		if key != "" {
 			fmt.Println("Found attribute:", key, "=", val)
-			p.currentNode.Args[key] = val
+			p.currentNode.Attribs[key] = val
 		}
 	}()
 	for i = 0; i < len(l); i++ {
@@ -177,7 +182,7 @@ func (p *parseState) parseAttribute(l []uint8) (i int) {
 	return
 }
 
-func ParseReader(rd io.Reader) (root *Node, err os.Error) {
+func Parse(rd io.Reader) (root *Node, err os.Error) {
 	bufr := bufio.NewReader(rd)
 	ps := newParseState(bufr, os.Stdout)
 	ps.rd = bufr

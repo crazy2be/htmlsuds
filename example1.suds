@@ -5,9 +5,9 @@
 	@title
 		Super coolness
 	@!title
-@!head (This text is ignored)
+@!head (This text is ignored, heh)
 @body
-	@p
+	@p class="foo bar"
 		Hello world. This is cool? Ok, that's good.
 	@!p
 	@markdown
@@ -17,5 +17,11 @@ This is some markdown text. The indentation will be passed verbatim to the markd
 
  - A list
 	@!markdown
+	@div class="fools" !
+	@form href="/test/formtest"
+		@textfield name="Username" !
+		@textarea name="Signature" !
+		@submit name="Create" !
+	@!form
 @!body
 @!html
