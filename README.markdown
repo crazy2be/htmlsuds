@@ -11,7 +11,7 @@ HtmlSuds is an experiment in designing a flexible, lightweight, and easily exten
 	<html>
 		<body>
 			@markdown
-Here, I can write the body of my site in markdown! This is really helpful when writing everything from help pages to simple descriptions for form elements. **Awesome**.
+	Here, I can write the body of my site in markdown! This is really helpful when writing everything from help pages to simple descriptions for form elements. **Awesome**.
 			@!markdown
 		</body>
 	</html>
