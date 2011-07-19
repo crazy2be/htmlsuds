@@ -2,14 +2,12 @@
 @head
 	@script src="/js/foo.js" !
 	@style src="/css/foo.css" !
-	@title
-		Super coolness
-	@!title
+	<title>Super coolness</title>
 @!head (This text is ignored, heh)
 @body
-	@p class="foo bar"
+	<p class="foo bar">
 		Hello world. This is cool? Ok, that's good.
-	@!p
+	</p>
 	@markdown
 This is some markdown text. The indentation will be passed verbatim to the markdown processor, so you can have code and stuff too:
 
@@ -18,11 +16,11 @@ This is some markdown text. The indentation will be passed verbatim to the markd
  - A list
 	@!markdown
 	This is not a @tag.
-	@div class="fools" !
+	<div class="fools"></div>
 	@form href="/test/formtest"
-		@textfield name="Username" !
-		@textarea name="Signature" !
-		@submit name="Create" !
+		@textfield id="username" !
+		@textarea id="signature" !
+		@submit id="create" !
 	@!form
 @!body
 @!html

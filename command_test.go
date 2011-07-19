@@ -7,7 +7,7 @@ import (
 func TestCalculateCommandPath(t *testing.T) {
 	nodePath1 := []string{"form", "textbox"}
 	path1 := calculateCommandPath(nodePath1)
-	ex := "suds/form/textbox"
+	ex := "suds/form/textbox/main"
 	
 	if path1 != ex {
 		t.Fatal("Got", path1, "expected", ex)

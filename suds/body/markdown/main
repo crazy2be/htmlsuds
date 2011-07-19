@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Markdown formatter not yet supported, but easy to add if you want. Here's your plain text:"
+
+cat -

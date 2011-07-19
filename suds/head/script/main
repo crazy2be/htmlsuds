@@ -12,4 +12,4 @@ src=$1
 #	--)	shift; break;;
 #	esac
 #done
-echo '<script type="text/javascript" src="'$src'"></script>'
+echo '<script type="text/javascript" src="'$ARGS_SRC'"></script>'

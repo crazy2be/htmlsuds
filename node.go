@@ -121,7 +121,10 @@ func (n *Node) FirstChild() *Node {
 // Returns the first child node furthest down the rabbit hole.
 func (n *Node) EndChild() *Node {
 	if !n.HasChildren() {
-		return n
+		if n.IsTag() {
+			return n
+		}
+		return n.Parent
 	}
 	return n.Children[0].EndChild()
 }
@@ -129,11 +132,11 @@ func (n *Node) EndChild() *Node {
 // Returns the next end child from this node. If this is not the end node in the node tree, then this will return the same thing as EndChild(). Otherwise, it returns the EndChild() of the next sibling or parent's sibling or parent's parent's sibling, ad infinitum.
 func (n *Node) NextEndChild() *Node {
 	//fmt.Println("In NextEndChild():", n)
-	ec := n.EndChild()
-	if ec != n {
-		//fmt.Println(ec, n)
-		return ec
-	}
+// 	ec := n.EndChild()
+// 	if ec != n {
+// 		//fmt.Println(ec, n)
+// 		return ec
+// 	}
 	if n.HasSibling() {
 		ns := n.NextSibling()
 		if ns != nil {

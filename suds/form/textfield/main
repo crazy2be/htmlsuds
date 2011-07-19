@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo -n '<input type="text"'
+
+if [ "$ARGS_ID" != "" ]; then
+	echo -n " id=\"$ARGS_ID\" name=\"$ARGS_ID\""
+fi
+
+echo "></input>"

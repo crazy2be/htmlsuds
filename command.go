@@ -32,9 +32,24 @@ func calculateCommandPath(nodePath []string) string {
 		return path
 	}
 	if len(nodePath) < 2 {
-		return ""
+		return nodePath[0]
 	}
 	return calculateCommandPath(nodePath[1:])
+}
+
+func (n *Node) CalculateEnv() []string {
+	curenv := os.Environ()
+	env := make([]string, len(n.Attribs) + len(curenv))
+	i := 0
+	for _, _ = range curenv {
+		env[i] = curenv[i]
+		i++
+	}
+	for key, val := range n.Attribs {
+		env[i] = "ARGS_" + strings.ToUpper(key) + "=" + val
+		i++
+	}
+	return env
 }
 
 func processNode(node *Node) (err os.Error) {
@@ -44,11 +59,13 @@ func processNode(node *Node) (err os.Error) {
 	}
 	
 	cmdname := calculateCommandPath(node.TagPath())
+	log.Println("For node:", node.Name)
 	log.Println("Calculated command name as:", cmdname)
 	cmdline := node.Args()
 	log.Println("Calculated commandline as:", cmdline)
 	cmd := exec.Command(cmdname, cmdline...)
 	
+	cmd.Env = node.CalculateEnv()
 	cmd.Stderr = os.Stderr
 	input, err := cmd.StdinPipe()
 	if err != nil {
@@ -56,7 +73,10 @@ func processNode(node *Node) (err os.Error) {
 	}
 	
 	//input := bytes.NewBuffer([]byte(""))
-	go input.Write(node.Content)
+	go func() {
+		input.Write(node.Content)
+		input.Close()
+	}()
 	//go input.WriteTo(inputp)
 	
 	node.Content, err = cmd.Output()

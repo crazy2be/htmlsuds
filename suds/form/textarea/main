@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -n '<textarea'
+
+if [ "$ARGS_ID" != "" ]; then
+	echo -n ' id="'$ARGS_ID'" name="'$ARGS_ID'"'
+fi
+
+echo -n '>'
+
+cat -
+
+echo -n '</textarea>'

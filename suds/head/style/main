@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo '<link rel="stylesheet" type="text/css" href="'$ARGS_SRC'" />'
