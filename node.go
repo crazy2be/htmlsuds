@@ -10,6 +10,7 @@ type Node struct {
 	Content []byte // Tag content, nil for normal nodes (instead, they have a child node with the content)
 	Children []*Node
 	Parent *Node
+	Processed bool // Has this node been processed yet?
 }
 
 func NewNode(parent *Node) *Node {
@@ -201,14 +202,18 @@ func (sn *Node) str(indent string) string {
 	str := ""
 	if sn.IsTag() {
 		str += "TAG NODE @" + sn.Name
+	} else if sn.IsText() {
+		str += "TEXT NODE"
+	} else {
+		str += "UNKNOWN NODE"
+	}
+	if sn.IsTag() {
 		for key, val := range sn.Attribs {
 			str += " " + key + "=" + val
 		}
-	} else if sn.IsText() {
-		str += "TEXT NODE"
+	}
+	if sn.IsText() {
 		str += " Content: '" + string(sn.Content) + "'"
-	} else {
-		str += "UNKNOWN NODE"
 	}
 	for _, node := range sn.Children {
 		if node == nil {

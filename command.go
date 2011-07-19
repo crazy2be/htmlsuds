@@ -1,51 +1,71 @@
 package main
 
 import (
-	"bytes"
+	"strings"
 	"exec"
 	"log"
 	"os"
 	"io"
+	"github.com/crazy2be/osutil"
 )
 
-func GenerateHTML(root *Node, wr io.Writer) (os.Error) {
-	val, err := generateHTML(root, wr)
-	wr.Write(val)
-	return err
+func GenerateHTML(root *Node, wr io.Writer) (err os.Error) {
+	node := root.EndChild()
+	for {
+		err = processNode(node)
+		if err != nil {
+			return err
+		}
+		node = node.NextEndChild()
+		if node == nil {
+			log.Println("Note: Writing all processed nodes to writer not yet implemented! Here's what the layout looks like:\n", root)
+			return
+		}
+	}
+	return
 }
 
-func generateHTML(root *Node, wr io.Writer) (val []byte, err os.Error) {
-	if root == nil {
+// Looks through all the possible command paths for the given node, and resolves to the most specific one.
+func calculateCommandPath(nodePath []string) string {
+	path := "suds/" + strings.Join(nodePath, "/") + "/main"
+	if osutil.FileExists(path) {
+		return path
+	}
+	if len(nodePath) < 2 {
+		return ""
+	}
+	return calculateCommandPath(nodePath[1:])
+}
+
+func processNode(node *Node) (err os.Error) {
+	if node == nil {
 		err = os.NewError("Nil node passed, cannot possibly generate HTML.")
 		return
 	}
-	cmdname := root.Name
-	cmdline := root.Args()
-	cmd := exec.Command("suds/"+cmdname, cmdline...)
-	output, err := cmd.StdoutPipe()
+	
+	cmdname := calculateCommandPath(node.TagPath())
+	log.Println("Calculated command name as:", cmdname)
+	cmdline := node.Args()
+	log.Println("Calculated commandline as:", cmdline)
+	cmd := exec.Command(cmdname, cmdline...)
+	
+	cmd.Stderr = os.Stderr
+	input, err := cmd.StdinPipe()
 	if err != nil {
 		return
 	}
-	inputp, err := cmd.StdinPipe()
+	
+	//input := bytes.NewBuffer([]byte(""))
+	go input.Write(node.Content)
+	//go input.WriteTo(inputp)
+	
+	node.Content, err = cmd.Output()
 	if err != nil {
 		return
 	}
-	input := bytes.NewBuffer([]byte(""))
-	input.Write(root.Content)
-	go input.WriteTo(inputp)
-	buf := bytes.NewBuffer([]byte(""))
-	buf.ReadFrom(output)
-	raw := buf.Bytes()
-	subroot, err := Parse(buf)
-	if err != nil {
-		return
-	}
-	if len(subroot.Children) == 0 {
-		wr.Write(raw)
-		return
-	}
-	GenerateHTML(subroot, wr)
-	cmd.Run()
-	log.Println(cmd)
+	log.Println(node)
+	
+	node.Processed = true
+	
 	return
 }
