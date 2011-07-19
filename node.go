@@ -110,12 +110,76 @@ func (n *Node) HasChildren() bool {
 	return false
 }
 
+func (n *Node) FirstChild() *Node {
+	if !n.HasChildren() {
+		return nil
+	}
+	return n.Children[0]
+}
+
 // Returns the first child node furthest down the rabbit hole.
 func (n *Node) EndChild() *Node {
 	if !n.HasChildren() {
 		return n
 	}
 	return n.Children[0].EndChild()
+}
+
+// Returns the next end child from this node. If this is not the end node in the node tree, then this will return the same thing as EndChild(). Otherwise, it returns the EndChild() of the next sibling or parent's sibling or parent's parent's sibling, ad infinitum.
+func (n *Node) NextEndChild() *Node {
+	//fmt.Println("In NextEndChild():", n)
+	ec := n.EndChild()
+	if ec != n {
+		//fmt.Println(ec, n)
+		return ec
+	}
+	if n.HasSibling() {
+		ns := n.NextSibling()
+		if ns != nil {
+			return ns.EndChild()
+		}
+	}
+	if n.Parent != nil {
+		ps := n.Parent.NextSibling()
+		if ps != nil {
+			return ps.NextEndChild()
+		}
+	}
+	return nil
+}
+
+// Returns the path to the tag as a series of strings. That is, {"rootName", "parentname", "nodename"} for the following:
+// @parentname
+//  @nodename
+func (n *Node) TagPath() []string {
+	i := n.TagPathLength()
+	tp := make([]string, i)
+	currentnode := new(int)
+	*currentnode = i-1
+	n.tagPath(tp, currentnode)
+	return tp
+}
+
+func (n *Node) tagPath(paths []string, currentnode *int) {
+	paths[*currentnode] = n.Name
+	*currentnode--
+	if n.Parent != nil {
+		n.Parent.tagPath(paths, currentnode)
+	}
+}
+
+func (n *Node) TagPathLength() int {
+	i := new(int)
+	n.tagPathLength(i)
+	return *i
+}
+
+func (n *Node) tagPathLength(i *int) {
+	*i++
+	if n.Parent != nil {
+		n.Parent.tagPathLength(i)
+		return
+	}
 }
 
 func (n *Node) IsTag() bool {
@@ -143,6 +207,8 @@ func (sn *Node) str(indent string) string {
 	} else if sn.IsText() {
 		str += "TEXT NODE"
 		str += " Content: '" + string(sn.Content) + "'"
+	} else {
+		str += "UNKNOWN NODE"
 	}
 	for _, node := range sn.Children {
 		if node == nil {
